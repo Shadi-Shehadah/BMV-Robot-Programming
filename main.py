@@ -24,8 +24,8 @@ from pybricks.media.ev3dev import SoundFile, ImageFile
 # Initialize the EV3 Brick.
 ev3 = EV3Brick()
 
-# Initialize a motor at port B.
-test_motor = Motor(Port.B)
+# Initialize a motor at port D.
+test_motor = Motor(Port.D)
 
 # Write your program here
 
