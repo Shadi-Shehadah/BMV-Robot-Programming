@@ -120,6 +120,7 @@ class RobotControl():
         # self.motorPull.run_target(speed, target_angle=target_angle, then=Stop.HOLD, wait=True)
         self.PICKED_UP = True
         self.MOVE = True
+        self.Moving()
         
     def getColor(self):
         return self.line_sensor.color()
@@ -129,8 +130,12 @@ class RobotControl():
         if detectedColor != Color.BLACK or detectedColor != Color.WHITE:
             self.robot.stop()
             self.MOVE = False
-            if self.PICKED_UP and self.ColorToDrop==detectedColor:
-                self.putDown()
+            if self.PICKED_UP:
+                if self.ColorToDrop == detectedColor:
+                    self.putDown()
+                else:
+                    self.turnLeft90Robot()
+                    self.Moving()
             else:
                 self.pickUp()
         return detectedColor
