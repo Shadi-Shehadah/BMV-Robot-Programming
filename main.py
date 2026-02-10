@@ -101,7 +101,7 @@ class RobotControl():
         self.ev3.speaker.say("I am about to Drop it")
 
         # once put down sequence is complete we can start moving again
-        self.Moving()
+      
         
 
     def pickUp(self):
@@ -120,7 +120,7 @@ class RobotControl():
         # self.motorPull.run_target(speed, target_angle=target_angle, then=Stop.HOLD, wait=True)
         self.PICKED_UP = True
         self.MOVE = True
-        self.Moving()
+
         
     def getColor(self):
         return self.line_sensor.color()
@@ -135,7 +135,7 @@ class RobotControl():
                     self.putDown()
                 else:
                     self.turnLeft90Robot()
-                    self.Moving()
+                    self.MOVE = True
             else:
                 self.pickUp()
         return detectedColor
