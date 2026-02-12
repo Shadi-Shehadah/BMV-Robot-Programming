@@ -23,20 +23,34 @@ class RobotControl():
         # Initialize motors
         self.motorR = Motor(Port.A, positive_direction=Direction.CLOCKWISE, gears=None)
         self.motorL = Motor(Port.B, positive_direction=Direction.CLOCKWISE, gears=None)
-        self.motorPull = Motor(Port.C, positive_direction=Direction.CLOCKWISE, gears=None)
-        self.motorGrip = Motor(Port.D, positive_direction=Direction.CLOCKWISE, gears=None)
+        self.motorPulley = Motor(Port.C, positive_direction=Direction.CLOCKWISE, gears=None)
+        self.motorGear = Motor(Port.D, positive_direction=Direction.CLOCKWISE, gears=None)
         
-        # Initialize drive base
-        self.robot = DriveBase(self.motorR, self.motorL, wheel_diameter=50, axle_track=120)
+
+        
         
         # Initialize sensors
         self.line_sensor = ColorSensor(Port.S1)
+        self.box_color_sensor = ColorSensor(Port.S2)
+        self.obstacle_sensor = UltrasonicSensor(Port.S4)
         
         # Constants
         self.BLACK = 9
         self.WHITE = 85
-        self.speed = 360  # degs/s
-        self.threshold = (self.BLACK + self.WHITE) / 2
+        self.pick_up_area_color = Color.YELLOW
+
+        self.DRIVE_SPEED = 360  # deg/s
+        self.TURN_SPEED = 200 # deg/s
+        self.PULLEY_SPEED = 180 # deg/s
+        self.GEAR_SPEED = 180 # deg/s
+
+        self.GEAR_PITCH_DIAMETER = 180
+        self.PULLEY_DIAMTER = 
+
+
+        self.WHEEL_DIAMETER = 50
+        self.AXLE_TRACK = 120
+
         
         # Set the gain of the proportional line controller. This means that for every
         # percentage point of light deviating from the threshold, we set the turn
@@ -44,10 +58,20 @@ class RobotControl():
         self.PROPORTIONAL_GAIN = 1.2
         
         # State variables
-        self.MOVE = True
-        self.PICKED_UP = False
-        self.ColorToDrop:type(Color)
+        self.picked_up = False
+        self.color_to_drop:type(Color)
+        self.threshold = (self.BLACK + self.WHITE) / 2
+
+
+        # Initialize drive base
+        self.robot = DriveBase(self.motorR, self.motorL, wheel_diameter=self.WHEEL_DIAMETER, axle_track=self.AXLE_TRACK)
+
     
+
+
+
+
+
     def turnLeft90Robot(self):
         self.robot.turn(90)
         self.robot.stop()
@@ -80,92 +104,106 @@ class RobotControl():
         self.MotorL.run_time(speed= -speed, time=time, then=Stop.HOLD, wait=True)
         self.MotorR.run_time(speed= speed, time=time, then=Stop.HOLD, wait=True)
     
+
+
+
+
+
+
+
     def putDown(self):
-        #turn then turn back on the track we shall see which one works best for now just puttin both 
-        self.turnRight90Tank()
-        self.turnLeft90Tank()
-        # ---Shadi Will Work on it ---
-        # speed = 100
-        # carry_off_angle = -360
-        # drop_angle = -360
-
-        # self.motorGrip.run_until_stalled(speed=speed, then=Stop.COAST, duty_limit=None)
-        # self.motorPull.run_target(speed, target_angle=carry_off_angle, then=Stop.HOLD, wait=True)
-        # self.motorGrip.run_target(speed,target_angle=drop_angle,then=Stop.HOLD,wait=True)
-        self.turnRight90Robot()
-        self.turnLeft90Robot()
-
-        self.PICKED_UP = False
+        self.ev3.speaker.say("Placing down box")
+        self.picked_up = False
         self.ColorToDrop = None
 
-        self.ev3.speaker.say("I am about to Drop it")
+        self.turnRight90Robot()
+        self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.Hold, duty_limit = 40)
 
-        # once put down sequence is complete we can start moving again
+        self.motorGear.run_angle(speed= -self.GEAR_SPEED,then = Stop.Hold)
+        self.motorPulley.run_angle(speed= -self.PULLEY_SPEED,then = Stop.Hold)
+
+
+
+        self.turnRight90Robot()
+
+        self.picked_up = False
+        self.ColorToDrop = None
+
+
       
         
 
     def pickUp(self):
+        self.color_to_drop = self.box_color_sensor.color()
        
-        # ---Shadi Will Work on it---
-        # speed = 100
-        # # time = 1000
-        # # rot_angle = 360
-        # target_angle = 360
-        # # self.motorPull.run_time(speed, time, then=Stop.HOLD, wait=True)
-        # # self.motorPull.run_angle(speed, rotation_angle = rot_angle, then=Stop.HOLD, wait=True)
+        self.motorGear.hold()
 
-        # self.motorPull.run_target(speed, target_angle=target_angle, then=Stop.HOLD, wait=True)
+        self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.Hold, duty_limit = 40)
 
-        # self.motorGrip.run_until_stalled(speed=speed, then=Stop.COAST, duty_limit=None)
-        # self.motorPull.run_target(speed, target_angle=target_angle, then=Stop.HOLD, wait=True)
-        self.PICKED_UP = True
-        self.MOVE = True
+        self.motorGear.run_angle(speed= self.GEAR_SPEED,then = Stop.Hold)
+        self.motorPulley.run_angle(speed= self.PULLEY_SPEED,then = Stop.Hold)
+
 
         
-    def getColor(self):
-        return self.line_sensor.color()
+        
+        self.turnRight90Robot()
+        self.turnRight90Robot()
 
-    def detection(self):
-        detectedColor = self.getColor()
-        if detectedColor != Color.BLACK or detectedColor != Color.WHITE:
-            self.robot.stop()
-            self.MOVE = False
-            if self.PICKED_UP:
-                if self.ColorToDrop == detectedColor:
-                    self.putDown()
-                else:
-                    self.turnLeft90Robot()
-                    self.MOVE = True
-            else:
-                self.pickUp()
-        return detectedColor
-       
-    def Moving(self):
-        if self.MOVE:
-            self.detection()
-            # Calculate the deviation from the threshold.
-            deviation = self.line_sensor.reflection() - self.threshold
+        self.picked_up = True
 
-            # Calculate the turn rate.
+
+
+    def follow_line_until_change(self):
+        current_color = self.line_sensor.color()
+        while self.line_sensor.color() == current_color:
+
+            if self.obstacle_sensor().distance() <= 300
+                self.ev3.speaker.say("Please help me")
+                wait(3000)
+                break
+
+            deviation = self.line_sensor.reflection() - threshold
             turn_rate = self.PROPORTIONAL_GAIN * deviation
+            robot.drive(self.DRIVE_SPEED, turn_rate)
+            wait(10)
+            current_color = self.line_sensor.color()
+        robot.stop()
+        return current_color
+            
 
-            # Set the drive base speed and turn rate.
-            self.robot.drive(speed=self.speed, turn_rate=turn_rate)
-            # You can wait for a short time or do other things in this loop.
-            # wait(10)
-            self.Moving()
-        self.ev3.speaker.say("I have stopped")
+
            
 
     def main(self):
         self.ev3.speaker.beep(frequency=500, duration=500)
         self.ev3.speaker.say("B")
-        wait(1)
+        wait(100)
         self.ev3.speaker.say("M")
-        wait(1)
+        wait(100)
         self.ev3.speaker.say("V")
+        wait(100)
+        self.ev3.speaker.beep(frequency=700, duration=200)
         self.ev3.speaker.say("Start")
-        self.Moving()
+
+
+        while True
+            new_color = self.follow_line_until_change()
+            self.threshold = self.line_sensor.reflection()
+
+            if self.picked_up():
+                if new_color == self.color_to_drop():
+                    self.putDown()
+
+            else:
+                if new_color == self.pick_up_area_color
+                    while self.obstacle_sensor().distance() > 300:
+                        deviation = self.line_sensor.reflection() - threshold
+                        turn_rate = self.PROPORTIONAL_GAIN * deviation
+                        robot.drive(self.DRIVE_SPEED, turn_rate)
+                        wait(10)
+                    self.pickUp()
+                
+
 
 
 if __name__ == "__main__":
