@@ -87,22 +87,53 @@ class RobotControlSense():
     def turnBy(self, by):
         self.robot.turn(by)
     
+    def pulleyDown(self):
+        self.ev3.speaker.say("Placing down box")
+        # self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
+
+        self.motorPulley.run_angle(speed=-self.PULLEY_SPEED, rotation_angle=180, then=Stop.HOLD)
+    
+    def pullyUp(self):
+        self.ev3.speaker.say("picking up box")
+        #self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
+
+        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=180, then=Stop.HOLD)
+    
+    def boxIn(self):
+        self.motorGear.run_angle(speed = self.GEAR_SPEED,rotation_angle = 400,then=Stop.HOLD)
+        return
+    
+    def boxOut(self):
+        self.motorGear.run_angle(speed = -self.GEAR_SPEED,rotation_angle = 400,then=Stop.HOLD)
+        return
+
+
+    
     def pickUp(self):
         # move the pulleys and stuff 
         self.running_process = True
+
+        self.pullyUp()
+
         self.picked_up = True
+        self.color_to_drop = self.box_color_sensor.reflection()
         self.turnBy(180)
         self.running_process = False
     
     def putDown(self):
         self.running_process = True
+       
+        
         if self.color_to_drop == 0:
             self.turn90Left()
             # pulley actions go here
+            self.pulleyDown()
+
             self.turn90Right()
         else:
             self.turn90Right()
             # pulley drop action
+            self.pulleyDown()
             self.turn90Left()
         self.turnBy(180)
         self.running_process = False 
@@ -118,7 +149,7 @@ class RobotControlSense():
         self.lightSenor()
         self.testDrive()
         while True:
-            if self.obstacle_sensor.distance() < 100:
+            if self.obstacle_sensor.distance() < 150:
                 self.robot.stop()
                 if self.picked_up:
                     self.testUltraSonicSenor()
