@@ -91,20 +91,30 @@ class RobotControlSense():
         self.ev3.speaker.say("Placing down box")
         # self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
 
-        self.motorPulley.run_angle(speed=-self.PULLEY_SPEED, rotation_angle=180, then=Stop.HOLD)
+        self.motorPulley.run_angle(speed=-self.PULLEY_SPEED, rotation_angle=300, then=Stop.HOLD)
     
     def pullyUp(self):
         self.ev3.speaker.say("picking up box")
         #self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
 
-        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=180, then=Stop.HOLD)
+        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=300, then=Stop.HOLD)
     
     def boxIn(self):
-        self.motorGear.run_angle(speed = self.GEAR_SPEED,rotation_angle = 400,then=Stop.HOLD)
+        self.motorGear.run_angle(speed = self.GEAR_SPEED,rotation_angle = 200,then=Stop.HOLD)
         return
     
     def boxOut(self):
-        self.motorGear.run_angle(speed = -self.GEAR_SPEED,rotation_angle = 400,then=Stop.HOLD)
+        self.motorGear.run_angle(speed = -self.GEAR_SPEED,rotation_angle = 200,then=Stop.HOLD)
+        return
+    
+    def boxUpAndIn(self):
+        self.pullyUp()
+        self.boxIn()
+        return 
+    
+    def boxOutAndDown(self):
+        self.boxOut()
+        self.pu
         return
 
 
@@ -112,7 +122,9 @@ class RobotControlSense():
     def pickUp(self):
         # move the pulleys and stuff 
         self.running_process = True
-
+        self.pullyUp()
+        self.robot.straight(50)
+        self.pulleyDown()
         self.pullyUp()
 
         self.picked_up = True
@@ -128,6 +140,8 @@ class RobotControlSense():
             self.turn90Left()
             # pulley actions go here
             self.pulleyDown()
+            self.pullyUp()
+            self.pulleyDown()
 
             self.turn90Right()
         else:
@@ -139,16 +153,40 @@ class RobotControlSense():
         self.running_process = False 
         self.picked_up = False
 
-
-
     
+    # pulley test
+
+    # def main(self):
+    #     while True:
+    #         button = self.ev3.buttons.pressed()
+    #         if button:
+    #             if button[0] == Button.RIGHT:
+    #                 self.boxIn()
+    #             elif button[0] == Button.DOWN:
+    #                 self.pulleyDown()
+    #             elif button[0] == Button.UP:
+    #                 self.pullyUp()
+    #             elif button[0] == Button.LEFT:
+    #                 self.boxOut()
+
+                    
+                
 
     
     def main(self):
         self.testUltraSonicSenor()
         self.lightSenor()
         self.testDrive()
-        while True:
+        emergencyStop = False
+       
+        while True and not emergencyStop:
+            button = self.ev3.buttons.pressed()
+            if button:
+                if button[0] == Button.UP:
+                    emergencyStop = True
+                elif button[0] == Button.DOWN:
+                    emergencyStop = False
+            
             if self.obstacle_sensor.distance() < 150:
                 self.robot.stop()
                 if self.picked_up:
@@ -162,6 +200,7 @@ class RobotControlSense():
                 self.testDrive()
                 self.testUltraSonicSenor()
                 self.lightSenor()
+            
            
                 
 
