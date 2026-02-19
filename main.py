@@ -8,6 +8,7 @@ from pybricks.robotics import DriveBase
 from pybricks.media.ev3dev import SoundFile, ImageFile
 
 import math
+from sensorTest import RobotControlSense
 
 
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
@@ -50,7 +51,7 @@ class RobotControl():
 
 
         self.WHEEL_DIAMETER = 50
-        self.AXLE_TRACK = 120
+        self.AXLE_TRACK = 320
 
         
         # Set the gain of the proportional line controller. This means that for every
@@ -156,7 +157,7 @@ class RobotControl():
 
     def follow_line_until_change(self):
         current_color = self.line_sensor.reflection()
-        print("Current Color from Line",current_color)
+        
         while True  :
             print("Box-ref",self.line_sensor.reflection())
 
@@ -209,7 +210,7 @@ class RobotControl():
 
 
 if __name__ == "__main__":
-    robot_control = RobotControl()
+    robot_control = RobotControlSense()
     robot_control.ev3.speaker.beep(frequency=1000, duration=500)
     robot_control.main()
 
