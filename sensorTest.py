@@ -61,6 +61,7 @@ class RobotControlSense():
         self.picked_up = False
         self.color_to_drop = None
         self.threshold = (self.BLACK + self.WHITE) / 2
+        self.running_process = False
 
 
         # Initialize drive base
@@ -71,11 +72,11 @@ class RobotControlSense():
         print("Sonic value: ",self.obstacle_sensor.distance())
     
     def lightSenor(self):
-        print("Light sense value: ",self.box_color_sensor.reflection())
-
-
+        print("Light sense value: ", self.box_color_sensor.reflection())
+    
     def testDrive(self):
-        self.robot.drive(100,0)
+        if not self.running_process:
+            self.robot.drive(100,0)
     
     def turn90Left(self):
         self.robot.turn(90)
@@ -83,19 +84,55 @@ class RobotControlSense():
     def turn90Right(self):
         self.robot.turn(-90)
 
-    def correctionPath(self, by):
+    def turnBy(self, by):
         self.robot.turn(by)
+    
+    def pickUp(self):
+        # move the pulleys and stuff 
+        self.running_process = True
+        self.picked_up = True
+        self.turnBy(180)
+        self.running_process = False
+    
+    def putDown(self):
+        self.running_process = True
+        if self.color_to_drop == 0:
+            self.turn90Left()
+            # pulley actions go here
+            self.turn90Right()
+        else:
+            self.turn90Right()
+            # pulley drop action
+            self.turn90Left()
+        self.turnBy(180)
+        self.running_process = False 
+        self.picked_up = False
+
+
+
+    
+
     
     def main(self):
         self.testUltraSonicSenor()
         self.lightSenor()
+        self.testDrive()
         while True:
-            if self.obstacle_sensor.distance() > 50:
+            if self.obstacle_sensor.distance() < 100:
+                self.robot.stop()
+                if self.picked_up:
+                    self.testUltraSonicSenor()
+                    self.lightSenor()
+                    self.putDown()
+                else:
+                    self.pickUp()
+                
+            else:
                 self.testDrive()
                 self.testUltraSonicSenor()
                 self.lightSenor()
-            else:
-                self.robot.stop()
+           
+                
 
            
             
