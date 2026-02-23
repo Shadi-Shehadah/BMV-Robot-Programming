@@ -77,6 +77,13 @@ class RobotControlSense():
     def testDrive(self):
         if not self.running_process:
             self.robot.drive(100,0)
+
+    def linefollowDrive(self):
+        if not self.running_process:
+            deviation = self.line_sensor.reflection() - self.threshold
+            turn_rate = self.PROPORTIONAL_GAIN * deviation
+            self.robot.drive(100, turn_rate)
+        
     
     def turn90Left(self):
         self.robot.turn(90)
@@ -129,7 +136,7 @@ class RobotControlSense():
 
         self.picked_up = True
         self.color_to_drop = self.box_color_sensor.reflection()
-        self.turnBy(180)
+        self.turnBy(170)
         self.running_process = False
     
     def putDown(self):
@@ -173,6 +180,34 @@ class RobotControlSense():
                 
 
     
+    # def main(self):
+    #     self.testUltraSonicSenor()
+    #     self.lightSenor()
+    #     self.testDrive()
+    #     emergencyStop = False
+       
+    #     while True and not emergencyStop:
+    #         button = self.ev3.buttons.pressed()
+    #         if button:
+    #             if button[0] == Button.UP:
+    #                 emergencyStop = True
+    #             elif button[0] == Button.DOWN:
+    #                 emergencyStop = False
+            
+    #         if self.obstacle_sensor.distance() < 150:
+    #             self.robot.stop()
+    #             if self.picked_up:
+    #                 self.testUltraSonicSenor()
+    #                 self.lightSenor()
+    #                 self.putDown()
+    #             else:
+    #                 self.pickUp()
+                
+    #         else:
+    #             self.testDrive()
+    #             self.testUltraSonicSenor()
+    #             self.lightSenor()
+
     def main(self):
         self.testUltraSonicSenor()
         self.lightSenor()
@@ -197,9 +232,11 @@ class RobotControlSense():
                     self.pickUp()
                 
             else:
-                self.testDrive()
+                self.linefollowDrive()
                 self.testUltraSonicSenor()
                 self.lightSenor()
+            
+           
             
            
                 
