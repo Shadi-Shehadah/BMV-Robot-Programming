@@ -146,18 +146,18 @@ class RobotControlSense():
         self.pulleyUp()
         self.robot.straight(50)
 
-            if self.self.box_color_sensor.reflection() <= self.COLOR1 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR1 + 3:
-                self.color_to_drop = 'green'
-                self.ev3.speaker.say("picking up green box")
-            elif self.self.box_color_sensor.reflection() <= self.COLOR2 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR2 + 3::
-                self.color_to_drop = 'grey'
-                self.ev3.speaker.say("picking up grey box")
-            elif self.self.box_color_sensor.reflection() <= self.COLOR3 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR3 + 3::
-                self.color_to_drop = 'red'
-                self.ev3.speaker.say("picking up red box")
-            else:
-                self.color_to_drop = 'unknown'
-                self.ev3.speaker.say("picking up unknown box")
+        if self.self.box_color_sensor.reflection() <= self.COLOR1 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR1 + 3:
+            self.color_to_drop = 'green'
+            self.ev3.speaker.say("picking up green box")
+        elif self.self.box_color_sensor.reflection() <= self.COLOR2 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR2 + 3::
+            self.color_to_drop = 'grey'
+            self.ev3.speaker.say("picking up grey box")
+        elif self.self.box_color_sensor.reflection() <= self.COLOR3 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR3 + 3::
+            self.color_to_drop = 'red'
+            self.ev3.speaker.say("picking up red box")
+        else:
+            self.color_to_drop = 'unknown'
+            self.ev3.speaker.say("picking up unknown box")
 
         self.pulleyDown()
         self.motorGear.hold()
@@ -308,7 +308,7 @@ class RobotControlSense():
 
 
 
-       # Main Loop:
+        # Main Loop:
         while False and not emergencyStop:          # temporarily paused to test individual features first
             button = self.ev3.buttons.pressed()
             if button:
