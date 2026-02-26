@@ -105,25 +105,25 @@ class RobotControlSense():
         
         # self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
 
-        self.motorPulley.run_angle(speed=(self.PULLEY_SPEED * -2), rotation_angle=400, then=Stop.HOLD)
+        self.motorPulley.run_angle(speed=(self.PULLEY_SPEED * -5), rotation_angle=400, then=Stop.HOLD)
     
     def pulleyUp(self):
         
         #self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
         self.motorGear.hold()
-        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=400, then=Stop.HOLD)
+        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=420, then=Stop.HOLD)
 
     def boxIn(self):
-        for i in range(10):
+        for i in range(11):
             self.motorGear.run_angle(speed=self.GEAR_SPEED, rotation_angle=20, then=Stop.HOLD)
-            self.motorPulley.run_angle(speed=self.GEAR_SPEED, rotation_angle=20, then=Stop.HOLD)
+            self.motorPulley.run_angle(speed=self.GEAR_SPEED, rotation_angle=24, then=Stop.HOLD)
             i+1
         return
     
     def boxOut(self):
-        for i in range(10):
+        for i in range(11):
             self.motorGear.run_angle(speed = -self.GEAR_SPEED,rotation_angle = 20,then=Stop.HOLD)
-            self.motorPulley.run_angle(speed=-self.GEAR_SPEED, rotation_angle=20, then=Stop.HOLD)
+            self.motorPulley.run_angle(speed=-self.GEAR_SPEED, rotation_angle=18, then=Stop.HOLD)
             i+1
         return
 
@@ -219,17 +219,14 @@ class RobotControlSense():
         elif self.color_to_drop == 'grey':
             self.ev3.speaker.say("placing down grey box on the right")
 
+
+
+        else:
             self.turn90Right()
             self.robot.straight(100)
             self.pulleyDown()
             self.robot.straight(-100)
             self.turn90Right()
-
-        else:
-            self.ev3.speaker.say("placing down red box in the middle")
-            self.pulleyDown()
-            self.robot.straight(-100)
-            self.turnBy(170)
 
 
         self.running_process = False 
