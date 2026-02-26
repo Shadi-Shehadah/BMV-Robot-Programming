@@ -38,9 +38,9 @@ class RobotControlSense():
         self.WHITE = 85
 
         # Box colors: 
-        self.COLOR1 = 5     # green   (these are placeholders currently)
-        self.COLOR2 = 50    # silver
-        self.COLOR3 = 100   # red
+        self.COLOR1 = 0     # green   (these are placeholders currently)
+        self.COLOR2 = 100    # silver
+        self.COLOR3 = 50   # red
 
         self.DRIVE_SPEED = 360  # deg/s
         self.TURN_SPEED = 200 # deg/s
@@ -102,37 +102,48 @@ class RobotControlSense():
         self.robot.turn(by)
     
     def pulleyDown(self):
-        self.ev3.speaker.say("Placing down box")
+        
         # self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
 
-        self.motorPulley.run_angle(speed=(self.PULLEY_SPEED * -2), rotation_angle=330, then=Stop.HOLD)
+        self.motorPulley.run_angle(speed=(self.PULLEY_SPEED * -2), rotation_angle=400, then=Stop.HOLD)
     
     def pulleyUp(self):
         
         #self.motorPulley.run_until_stalled(speed = self.PULLEY_SPEED,then = Stop.HOLD, duty_limit = 40)
-
-        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=330, then=Stop.HOLD)
-    
-
+        self.motorGear.hold()
+        self.motorPulley.run_angle(speed=self.PULLEY_SPEED, rotation_angle=400, then=Stop.HOLD)
 
     def boxIn(self):
-        self.motorGear.run_angle(speed = self.GEAR_SPEED,rotation_angle = 200,then=Stop.HOLD)
+        for i in range(10):
+            self.motorGear.run_angle(speed=self.GEAR_SPEED, rotation_angle=20, then=Stop.HOLD)
+            self.motorPulley.run_angle(speed=self.GEAR_SPEED, rotation_angle=20, then=Stop.HOLD)
+            i+1
         return
     
     def boxOut(self):
-        self.motorGear.run_angle(speed = -self.GEAR_SPEED,rotation_angle = 200,then=Stop.HOLD)
+        for i in range(10):
+            self.motorGear.run_angle(speed = -self.GEAR_SPEED,rotation_angle = 20,then=Stop.HOLD)
+            self.motorPulley.run_angle(speed=-self.GEAR_SPEED, rotation_angle=20, then=Stop.HOLD)
+            i+1
         return
 
+    # def boxUpAndIn(self):
+    #     self.pulleyUp()
+    #     self.boxIn()
+    
+    # def boxOutAndDown(self):
 
-
+        
     
     def pickUp(self):
         # move the pulleys and stuff 
         self.running_process = True
         self.pulleyUp()
-        self.robot.straight(50)
+        self.robot.straight(100)
         self.pulleyDown()
+        wait(3000)
         self.pulleyUp()
+        self.boxIn()
 
         self.picked_up = True
         self.color_to_drop = self.box_color_sensor.reflection()
@@ -140,19 +151,21 @@ class RobotControlSense():
         self.running_process = False
     
 
-    def pickUp_experimental(self):
+    def pickUp_Experimental(self):
         self.running_process = True
 
         self.pulleyUp()
-        self.robot.straight(50)
+        self.motorPulley.hold()
 
-        if self.self.box_color_sensor.reflection() <= self.COLOR1 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR1 + 3:
+        self.robot.straight(100)
+
+        if self.box_color_sensor.reflection() <= self.COLOR1 + 10  and self.box_color_sensor.reflection() >= self.COLOR1 - 10:
             self.color_to_drop = 'green'
             self.ev3.speaker.say("picking up green box")
-        elif self.self.box_color_sensor.reflection() <= self.COLOR2 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR2 + 3:
+        elif self.box_color_sensor.reflection() <= self.COLOR2 + 10  and self.box_color_sensor.reflection() >= self.COLOR2 - 10:
             self.color_to_drop = 'grey'
             self.ev3.speaker.say("picking up grey box")
-        elif self.self.box_color_sensor.reflection() <= self.COLOR3 + 3  and self.self.box_color_sensor.reflection() >= self.COLOR3 + 3:
+        elif self.box_color_sensor.reflection() <= self.COLOR3 + 10  and self.box_color_sensor.reflection() >= self.COLOR3 -10:
             self.color_to_drop = 'red'
             self.ev3.speaker.say("picking up red box")
         else:
@@ -162,6 +175,7 @@ class RobotControlSense():
         self.pulleyDown()
         self.motorGear.hold()
         self.pulleyUp()
+        self.boxIn()
 
         self.picked_up = True
         self.turnBy(170)
@@ -170,7 +184,7 @@ class RobotControlSense():
     def putDown(self):
         self.running_process = True
        
-        
+        self.boxOut()
         if self.color_to_drop == 0:
             self.turn90Left()
             # pulley actions go here
@@ -191,14 +205,14 @@ class RobotControlSense():
 
     def putDown_Experimental(self):
         self.running_process = True
-        
+        self.boxOut()
         if self.color_to_drop == 'green':
             self.ev3.speaker.say("placing down green box on the left")
 
             self.turn90Left()
-            self.robot.straight(50)
+            self.robot.straight(100)
             self.pulleyDown()
-            self.robot.straight(-50)
+            self.robot.straight(-100)
             self.turn90Left()
 
 
@@ -206,16 +220,16 @@ class RobotControlSense():
             self.ev3.speaker.say("placing down grey box on the right")
 
             self.turn90Right()
-            self.robot.straight(50)
+            self.robot.straight(100)
             self.pulleyDown()
-            self.robot.straight(-50)
+            self.robot.straight(-100)
             self.turn90Right()
 
         else:
             self.ev3.speaker.say("placing down red box in the middle")
             self.pulleyDown()
-            self.robot.straight(-50)
-            self.turnBy(180)
+            self.robot.straight(-100)
+            self.turnBy(170)
 
 
         self.running_process = False 
@@ -277,39 +291,11 @@ class RobotControlSense():
         emergencyStop = False
 
         # setting the speaker.say options:
-        self.ev3.speaker.set_speech_options(language='en-uk-north',voice = 'croak', pitch = '20')
-
-
-
-        
-       
-
-
-        # Setting Colors:
-        self.ev3.speaker.say("Please show me the green box")
-        self.wait(700)
-        self.COLOR1 = self.self.box_color_sensor.reflection()
-        self.ev3.speaker.say(f"reflection value is: {self.COLOR1} ")
-
-
-        self.ev3.speaker.say("Please show me the grey box")
-        self.wait(700)
-        self.COLOR1 = self.self.box_color_sensor.reflection()
-        self.ev3.speaker.say(f"reflection value is: {self.COLOR1} ")
-
-
-        self.ev3.speaker.say("Please show me the red box")
-        self.wait(700)
-        self.COLOR1 = self.self.box_color_sensor.reflection()
-        self.ev3.speaker.say(f"reflection value is: {self.COLOR1} ")
-
-
-
-
+        self.ev3.speaker.set_speech_options(language='en-uk-north',voice = 'croak', pitch = 20)
 
 
         # Main Loop:
-        while False and not emergencyStop:          # temporarily paused to test individual features first
+        while True and not emergencyStop:          # temporarily paused to test individual features first
             button = self.ev3.buttons.pressed()
             if button:
                 if button[0] == Button.UP:
@@ -322,9 +308,9 @@ class RobotControlSense():
                 if self.picked_up:
                     self.testUltraSonicSenor()
                     self.lightSenor()
-                    self.putDown_experimental()
+                    self.putDown_Experimental()
                 else:
-                    self.pickUp_experimental()
+                    self.pickUp_Experimental()
                 
             else:
                 self.linefollowDrive()
